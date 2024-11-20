@@ -27,3 +27,6 @@ then i ran the command and  created the database
 - i created an entity for notification and another for users and did a many to one relationship between them
 - i then made a migration and migrated it 
 - after that i did the logic in the NotificationController.php
+
+  ## Documentation of the endpoint
+- its found at localhost:8000/api/docs
