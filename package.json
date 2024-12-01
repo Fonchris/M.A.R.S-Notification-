@@ -1,0 +1,21 @@
+{
+  "name": "notifications--latest---copy",
+  "version": "1.0.0",
+  "description": "Notification API for MARS",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --minify",
+    "watch:css": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15"
+  }
+}

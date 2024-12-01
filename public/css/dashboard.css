@@ -1,0 +1,149 @@
+
+        body {
+            background-color: #090a12; /* Slightly lighter than sidebar */
+            color: white; /* Set default text color to white */
+            display: flex; /* Flexbox for overall layout */
+            flex-direction: row; /* Row direction for flex items */
+            min-height: 100vh; /* Minimum height for full viewport */
+        }
+        .sidebar-icon {
+            margin-right: 10px; /* Add spacing between the icon and text */
+        }
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-title i {
+            margin-right: 8px; /* Spacing between the title icon and text */
+        }
+        .card {
+            background-color: #1a1b24;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 10px;
+            color: white;
+            text-align: center;
+            flex: 1; /* Make each card take equal space */
+            min-width: 200px; /* Minimum width for cards */
+        }
+        .card-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .content-area {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .cards-container {
+            display: flex; /* Flexbox for horizontal alignment */
+            justify-content: space-between; /* Space between cards */
+            margin-bottom: 20px; /* Space below cards */
+            flex-wrap: wrap; /* Allow cards to wrap */
+        }
+        .left-section, .right-section {
+            width: 100%; /* Full width on small screens */
+            padding: 20px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        @media (min-width: 768px) {
+            .left-section, .right-section {
+                width: 50%; /* Half width on larger screens */
+            }
+        }
+        @media (max-width: 480px) {
+            .card {
+                margin: 5px 0; /* Adjust card margins for small screens */
+                flex: 1 1 100%; /* Full width cards on small screens */
+            }
+            .navbar button, .navbar input[type="text"] {
+                font-size: 12px; /* Smaller font size */
+            }
+            .navbar {
+                flex-direction: column; /* Stack navbar items vertically */
+                align-items: flex-start; /* Align items to the start */
+            }
+            .navbar div {
+                width: 100%; /* Full width for input and button container */
+                display: flex; /* Flexbox for input and button */
+                justify-content: space-between; /* Space between input and button */
+            }
+        }
+        .barchart {
+            height: 200px;
+            background-color: #2d2e38;
+            border-radius: 8px;
+            position: relative;
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .table {
+            background-color: #1a1b24;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .table th, .table td {
+            padding: 8px 0;
+            text-align: left;
+            color: white;
+        }
+        .table th {
+            font-weight: bold;
+        }
+        .hidden {
+            display: none; /* Utility class for hiding tabs */
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #1a1b24;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .navbar input[type="text"] {
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            margin-right: 5px; /* Bring search closer to button */
+            flex: 1; /* Allow input to grow */
+        }
+        .navbar button {
+            background-color: #2196F3; /* Changed to blue */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .navbar button:hover {
+            background-color: #1976D2; /* Darker blue on hover */
+        }
+        .welcome-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar {
+            padding: 5px;
+            border-radius: 4px;
+            background-color: #1a1b24;
+            color: white;
+        }
+   

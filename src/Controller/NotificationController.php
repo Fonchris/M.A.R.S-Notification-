@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -17,6 +18,18 @@ class NotificationController extends AbstractController
     private EntityManagerInterface $entityManager;
     private MailerInterface $mailer;
 
+    #[Route('/', name: 'home')]
+public function index(): Response
+{
+    // Fetch all notifications
+    $notifications = $this->entityManager->getRepository(Notification::class)->findAllNotificationsWithUsers();
+
+    return $this->render('notification/index.html.twig', [
+        'notifications' => $notifications,  // Pass notifications to the template
+    ]);
+}
+
+  
     public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
         $this->entityManager = $entityManager;

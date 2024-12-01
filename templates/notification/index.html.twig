@@ -1,20 +1,267 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ asset('build/app.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}"> 
+    <title>Dashboard</title>
+    
+</head>
+<body>
 
-{% block title %}Hello NotificationController!{% endblock %}
+    <!-- Sidebar -->
+    <div class="w-64 h-screen" style="background-color: #08060f; border-right: 2px solid #1a1b24;">
+        <div class="p-4 text-white font-bold text-lg sidebar-title">
+            <i class="fas fa-apps"></i> <i class="fas fa-cog"></i> MARS
+        </div>
+        <div class="p-4" style="margin: 4px 0; color: #A0AEC0;">Overview</div>
+        <nav style="margin-top: 2px;">
+            <ul>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('dashboard')">
+                    <i class="fas fa-tachometer-alt sidebar-icon"></i> Dashboard
+                </li>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('customers')">
+                    <i class="fas fa-users sidebar-icon"></i> Customers
+                </li>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('notifications')">
+                    <i class="fas fa-bell sidebar-icon"></i> Notifications
+                </li>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('userManagement')">
+                    <i class="fas fa-user-cog sidebar-icon"></i> User Management
+                </li>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('payments')">
+                    <i class="fas fa-credit-card sidebar-icon"></i> Payments
+                </li>
+                <li class="flex items-center px-4 py-2 text-white hover:bg-gray-800 cursor-pointer" onclick="showTab('auditLog')">
+                    <i class="fas fa-file-alt sidebar-icon"></i> Audit Log
+                </li>
+            </ul>
+        </nav>
+    </div>
 
-{% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <!-- Content Area -->
+    <div class="flex-1 p-6">
+        <div class="navbar">
+            <button onclick="showTab('dashboard')">Dashboard/Overview</button>
+            <div style="display: flex; align-items: center;">
+                <input type="text" placeholder="Search..." />
+                <button>Search</button>
+            </div>
+        </div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+        <div id="dashboard" class="tab-content">
+            <div class="welcome-section">
+                <div>Hi, welcome back!</div>
+                <div>
+                    <input type="date" class="calendar" />
+                    <button>Download</button>
+                </div>
+            </div>
+            <div class="cards-container">
+                <div class="card">
+                    <i class="fas fa-users card-icon"></i>
+                    <div>Total Customers</div>
+                    <div>6</div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-plug card-icon"></i>
+                    <div>Connected Customers</div>
+                    <div>6</div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-user-slash card-icon"></i>
+                    <div>Disconnected Customers</div>
+                    <div>6</div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-dollar-sign card-icon"></i>
+                    <div>Total Unpaid Amount</div>
+                    <div>600 FCFA</div>
+                </div>
+            </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/AFC/SymfonyProjects/Notifications/src/Controller/NotificationController.php</code></li>
-        <li>Your template at <code>C:/Users/AFC/SymfonyProjects/Notifications/templates/notification/index.html.twig</code></li>
-    </ul>
-</div>
-{% endblock %}
+            <div class="content-area">
+                <div class="left-section">
+                    <div class="barchart">
+                        <canvas id="customerChart"></canvas>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #2196F3;"></div>
+                            <div>Connected</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #F44336;"></div>
+                            <div>Disconnected</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-section">
+                    <div class="table">
+                        <h3>Top 5 Customers with Highest Outstanding Amounts</h3>
+                        <table>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Outstanding Amount</th>
+                            </tr>
+                            <tr>
+                                <td>MR A</td>
+                                <td>150.00  FCFA</td>
+                            </tr>
+                            <tr>
+                                <td>Mr B</td>
+                                <td>120.00 FCFA</td>
+                            </tr>
+                            <tr>
+                                <td>MR C</td>
+                                <td> 10000.00 FCFA</td>
+                            </tr>
+                            <tr>
+                                <td>Mr D</td>
+                                <td>900.00 FCFA</td>
+                            </tr>
+                            <tr>
+                                <td>Mr E</td>
+                                <td>8000.00  FCFA</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="customers" class="tab-content hidden">
+            <h2 class="text-2xl text-white">Customers</h2>
+            <table class="min-w-full bg-gray-800 mt-4">
+                <thead>
+                    <tr>
+                        <th class="py-2 text-left text-gray-400">Customer Name</th>
+                        <th class="py-2 text-left text-gray-400">Meter Number</th>
+                        <th class="py-2 text-left text-gray-400">Meter Type</th>
+                        <th class="py-2 text-left text-gray-400">Status</th>
+                        <th class="py-2 text-left text-gray-400">Outstanding Amount</th>
+                        <th class="py-2 text-left text-gray-400">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-gray-700">
+                        <td class="py-2 text-white">Mr A</td>
+                        <td class="py-2 text-white">123456</td>
+                        <td class="py-2 text-white">Residential</td>
+                        <td class="py-2 text-white">Active</td>
+                        <td class="py-2 text-white">50.00 FCFA</td>
+                        <td class="py-2 text-white">
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Edit</button>
+                        </td>
+                    </tr>
+                    <!-- More rows can be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="notifications" class="tab-content hidden">
+            <h2 class="text-2xl text-white">Notifications</h2>
+            <table class="min-w-full bg-gray-800 mt-4">
+                <thead>
+                    <tr>
+                        <th class="py-2 text-left text-gray-400">User</th>
+                        <th class="py-2 text-left text-gray-400">Message</th>
+                        <th class="py-2 text-left text-gray-400">Status</th>
+                        <th class="py-2 text-left text-gray-400">Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notification in notifications %}
+                    <tr class="hover:bg-gray-700">
+                        <td class="py-2 text-white">{{ notification.userId.username }}</td>
+                        <td class="py-2 text-white">{{ notification.message }}</td>
+                        <td class="py-2 text-white">{{ notification.status }}</td>
+                        <td class="py-2 text-white">{{ notification.createdAt|date('Y-m-d H:i:s') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="py-2 text-white text-center">No notifications available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="userManagement" class="tab-content hidden">
+            <h2 class="text-2xl text-white">User Management</h2>
+            <!-- User Management content goes here -->
+        </div>
+
+        <div id="payments" class="tab-content hidden">
+            <h2 class="text-2xl text-white">Payments</h2>
+            <!-- Payments content goes here -->
+        </div>
+
+        <div id="auditLog" class="tab-content hidden">
+            <h2 class="text-2xl text-white">Audit Log</h2>
+            <!-- Audit Log content goes here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+        }
+
+        
+        showTab('dashboard');
+
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('customerChart').getContext('2d');
+            const customerChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Connected', 'Disconnected'],
+                    datasets: [{
+                        label: 'Customers',
+                        data: [6, 6], 
+                        backgroundColor: ['#2196F3', '#F44336'], 
+                        borderWidth: 0.2 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white' 
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white' 
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white' 
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

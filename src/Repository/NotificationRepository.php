@@ -16,28 +16,36 @@ class NotificationRepository extends ServiceEntityRepository
         parent::__construct($registry, Notification::class);
     }
 
-//    /**
-//     * @return Notification[] Returns an array of Notification objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('n')
-//            ->andWhere('n.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('n.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function findAllNotificationsWithUsers(): array
+    {
+        return $this->createQueryBuilder('n')
+            ->leftJoin('n.userId', 'u') // Join the User entity
+            ->addSelect('u')             // Select the User data
+            ->orderBy('n.createdAt', 'DESC') // Order by createdAt
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findOneBySomeField($value): ?Notification
-//    {
-//        return $this->createQueryBuilder('n')
-//            ->andWhere('n.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    // Optional example methods can remain commented out
+    /*
+    public function findByExampleField($value): array
+    {
+        return $this->createQueryBuilder('n')
+            ->andWhere('n.exampleField = :val')
+            ->setParameter('val', $value)
+            ->orderBy('n.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneBySomeField($value): ?Notification
+    {
+        return $this->createQueryBuilder('n')
+            ->andWhere('n.exampleField = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+    */
 }
