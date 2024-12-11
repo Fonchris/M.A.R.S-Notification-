@@ -12,11 +12,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Psr\Log\LoggerInterface; // Import the LoggerInterface
 
 class NotificationController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private MailerInterface $mailer;
+    private $logger;
 
     #[Route('/', name: 'home')]
 public function index(): Response
@@ -30,151 +32,122 @@ public function index(): Response
 }
 
   
-    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer,LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
 
     #[Route('/api/notification/new', methods: ['POST'])]
     public function newNotification(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+    $data = json_decode($request->getContent(), true);
 
-        // Check for required parameters
-        if (!isset($data['userId'], $data['destination'], $data['smsDestination'], $data['whatsappDestination'], $data['message'], $data['mode'])) {
-            return new JsonResponse(['message' => 'Missing parameters'], 400);
-        }
-
-        // Find the user by userId
-        $user = $this->entityManager->getRepository(User::class)->find($data['userId']);
-        if (!$user) {
-            return new JsonResponse(['message' => 'User not found'], 404);
-        }
-
-        // Create a new Notification entity
-        $notification = new Notification();
-        $notification->setDestination($data['destination']); // Email
-        $notification->setSmsDestination($data['smsDestination']); // SMS
-        $notification->setWhatsappDestination($data['whatsappDestination']); // WhatsApp
-        $notification->setUserId($user);
-        $notification->setMessage($data['message']);
-        $notification->setStatus('new');
-        $notification->setCreatedAt(new \DateTimeImmutable());
-        $notification->setUpdatedAt(new \DateTime());
-        $notification->setMode($data['mode']); // Store the mode
-
-        // Persist the new notification
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-
-        // Return a success response with the notification ID
-        return new JsonResponse(['status code' => 201, 'id' => $notification->getId(), 'message' => 'ok'], 201);
+    // Check for required parameters
+    if (!isset($data['userId'], $data['destination'], $data['smsDestination'], $data['whatsappDestination'], $data['message'], $data['mode'], $data['application'])) {
+        return new JsonResponse(['message' => 'Missing parameters'], 400);
     }
 
-    #[Route('/api/notification/send', methods: ['POST'])]
-    public function sendNotification(Request $request): JsonResponse
-    {
-        // Decode JSON request body
-        $data = json_decode($request->getContent(), true);
-        $notificationId = $data['notificationId'] ?? null; // Retrieve the ID from the JSON body
+    // Find the user by userId
+    $user = $this->entityManager->getRepository(User::class)->find($data['userId']);
+    if (!$user) {
+        return new JsonResponse(['message' => 'User not found'], 404);
+    }
 
-        if (!$notificationId) {
-            return new JsonResponse(['message' => 'Notification ID is required'], 400);
-        }
+    // Create a new Notification entity
+    $notification = new Notification();
+    $notification->setDestination($data['destination']);
+    $notification->setSmsDestination($data['smsDestination']);
+    $notification->setWhatsappDestination($data['whatsappDestination']);
+    $notification->setUserId($user);
+    $notification->setMessage($data['message']);
+    $notification->setStatus('new');
+    $notification->setCreatedAt(new \DateTimeImmutable());
+    $notification->setUpdatedAt(new \DateTime());
+    $notification->setMode($data['mode']);
+    $notification->setApplication($data['application']); // Set the application
 
-        // Find the notification by ID
-        $notification = $this->entityManager->getRepository(Notification::class)->find($notificationId);
+    // Persist the new notification
+    $this->entityManager->persist($notification);
+    $this->entityManager->flush();
 
-        if (!$notification) {
-            return new JsonResponse(['message' => 'Notification not found'], 404);
-        }
+    // Return a success response with the notification ID
+    return new JsonResponse(['status code' => 201, 'id' => $notification->getId(), 'message' => 'ok'], 201);
+}
 
-        $responses = [];
-        $emailSent = false; // Track email sending status
-        $message = $notification->getMessage();
-        $mode = $notification->getMode();
+#[Route('/api/notification/send', methods: ['POST'])]
+public function sendNotification(Request $request): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
+    $notificationId = $data['notificationId'] ?? null;
 
-        // Send notifications based on mode
+    if (!$notificationId) {
+        return new JsonResponse(['message' => 'Notification ID is required'], 400);
+    }
+
+    $notification = $this->entityManager->getRepository(Notification::class)->find($notificationId);
+
+    if (!$notification) {
+        return new JsonResponse(['message' => 'Notification not found'], 404);
+    }
+
+    $responses = [];
+    $emailSent = false;
+    $message = $notification->getMessage();
+    $mode = $notification->getMode();
+
+    try {
         switch ($mode) {
             case 'email':
-                if ($notification->getDestination()) {
-                    try {
-                        $email = (new Email())
-                            ->from('noreply@example.com')
-                            ->to($notification->getDestination())
-                            ->subject('New Notification')
-                            ->text($message);
-
-                        $this->mailer->send($email);
-                        $responses['email'] = 'Email sent successfully';
-                        $emailSent = true; // Mark as sent
-                    } catch (\Exception $e) {
-                        $responses['email'] = 'Email sending failed: ' . $e->getMessage();
-                    }
-                }
+                $emailSent = $this->handleEmailNotification($notification, $message, $responses);
                 break;
-
             case 'sms':
-                if ($notification->getSmsDestination()) {
-                    $smsResponse = $this->sendSmsViaInfobip($notification->getSmsDestination(), $message);
-                    $responses['sms'] = $smsResponse['message'];
-                }
+                $responses['sms'] = $this->sendSmsViaInfobip($notification->getSmsDestination(), $message)['message'];
                 break;
-
             case 'whatsapp':
-                if ($notification->getWhatsappDestination()) {
-                    $whatsappResponse = $this->sendWhatsappViaInfobip($notification->getWhatsappDestination(), $message);
-                    $responses['whatsapp'] = $whatsappResponse['message'];
-                }
+                $responses['whatsapp'] = $this->sendWhatsappViaInfobip($notification->getWhatsappDestination(), $message)['message'];
                 break;
-
             case 'all':
-                // Send Email
-                if ($notification->getDestination()) {
-                    try {
-                        $email = (new Email())
-                            ->from('noreply@example.com')
-                            ->to($notification->getDestination())
-                            ->subject('New Notification')
-                            ->text($message);
-
-                        $this->mailer->send($email);
-                        $responses['email'] = 'Email sent successfully';
-                        $emailSent = true; // Mark as sent
-                    } catch (\Exception $e) {
-                        $responses['email'] = 'Email sending failed: ' . $e->getMessage();
-                    }
-                }
-
-                // Send SMS
-                if ($notification->getSmsDestination()) {
-                    $smsResponse = $this->sendSmsViaInfobip($notification->getSmsDestination(), $message);
-                    $responses['sms'] = $smsResponse['message'];
-                }
-
-                // Send WhatsApp
-                if ($notification->getWhatsappDestination()) {
-                    $whatsappResponse = $this->sendWhatsappViaInfobip($notification->getWhatsappDestination(), $message);
-                    $responses['whatsapp'] = $whatsappResponse['message'];
-                }
+                $emailSent = $this->handleEmailNotification($notification, $message, $responses);
+                $responses['sms'] = $this->sendSmsViaInfobip($notification->getSmsDestination(), $message)['message'];
+                $responses['whatsapp'] = $this->sendWhatsappViaInfobip($notification->getWhatsappDestination(), $message)['message'];
                 break;
-
             default:
                 return new JsonResponse(['message' => 'Invalid mode specified'], 400);
         }
 
-        // Update the notification status
-        if ($emailSent || isset($responses['sms']) && strpos($responses['sms'], 'SMS sent successfully') !== false || isset($responses['whatsapp']) && strpos($responses['whatsapp'], 'WhatsApp message sent successfully') !== false) {
-            $notification->setStatus('sent');
-        } else {
-            $notification->setStatus('failed');
-        }
-
+        // Set notification status based on whether any notification was sent successfully
+        $notification->setStatus($emailSent ? 'sent' : 'failed');
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Notifications processed', 'details' => $responses], 200);
+    } catch (\Exception $e) {
+        $this->logger->error('An error occurred: ' . $e->getMessage()); // Log the error
+        return new JsonResponse(['message' => 'An error occurred: ' . $e->getMessage()], 500);
     }
+}
+
+private function handleEmailNotification($notification, $message, &$responses)
+{
+    if ($notification->getDestination()) {
+        try {
+            $email = (new Email())
+                ->from($_ENV['MAILER_FROM'] ?? 'noreply@example.com')
+                ->to($notification->getDestination())
+                ->subject('New Notification')
+                ->text($message);
+
+            $this->mailer->send($email);
+            $responses['email'] = 'Email sent successfully';
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error('Email sending failed: ' . $e->getMessage());
+            $responses['email'] = 'Email sending failed: ' . $e->getMessage();
+        }
+    }
+    return false;
+}
 
     private function sendSmsViaInfobip(string $to, string $text): array
     {

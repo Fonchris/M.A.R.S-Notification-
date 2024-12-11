@@ -18,14 +18,14 @@ final class Version20241106132614 extends AbstractMigration
     }
 
     public function up(Schema $schema): void
-    {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE notification ADD sms_destination VARCHAR(255) DEFAULT NULL, ADD whatsapp_destination VARCHAR(255) DEFAULT NULL');
+{
+    // Check for existing columns before adding
+    $table = $schema->getTable('notification');
+    if (!$table->hasColumn('sms_destination')) {
+        $this->addSql('ALTER TABLE notification ADD sms_destination VARCHAR(255) DEFAULT NULL');
     }
-
-    public function down(Schema $schema): void
-    {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE notification DROP sms_destination, DROP whatsapp_destination');
+    if (!$table->hasColumn('whatsapp_destination')) {
+        $this->addSql('ALTER TABLE notification ADD whatsapp_destination VARCHAR(255) DEFAULT NULL');
     }
+}
 }

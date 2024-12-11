@@ -20,7 +20,8 @@ The Notification API allows users to create, send, and check the status of notif
         "smsDestination": "+15555555555",
         "whatsappDestination": "+15555555555",
         "message": "Your notification message",
-        "mode": "email" // or "sms" or "whatsapp"
+        "mode": "email", // or "sms" or "whatsapp"
+        "application": "applicationName"
     }
     ```
 - **Responses**:

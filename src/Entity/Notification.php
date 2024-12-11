@@ -44,6 +44,10 @@ class Notification
     #[ORM\Column(length: 20)]
     private ?string $mode = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $application = null; // New application column
+    
+
     // Getters and Setters...
 
     public function getId(): ?int
@@ -160,6 +164,19 @@ class Notification
     public function markAsFailed(): static
     {
         $this->status = 'failed';
+        return $this;
+    }
+
+ 
+    // Add getter and setter for application
+    public function getApplication(): ?string
+    {
+        return $this->application;
+    }
+
+    public function setApplication(?string $application): static
+    {
+        $this->application = $application;
         return $this;
     }
 }
